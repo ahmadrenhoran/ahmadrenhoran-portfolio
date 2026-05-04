@@ -1,0 +1,77 @@
+// https://nuxt.com/docs/api/configuration/nuxt-config
+export default defineNuxtConfig({
+  devtools: { enabled: true },
+
+  modules: [
+    '@nuxtjs/tailwindcss',
+    '@nuxtjs/color-mode',
+    'shadcn-nuxt',
+    '@vueuse/nuxt',
+  ],
+
+  colorMode: {
+    classSuffix: '',
+    preference: 'light',
+    fallback: 'light',
+  },
+
+  shadcn: {
+    prefix: '',
+    componentDir: './components/ui',
+  },
+
+  app: {
+    head: {
+      title: 'Ahmad Renhoran — Developer',
+      htmlAttrs: { lang: 'en' },
+      meta: [
+        { charset: 'utf-8' },
+        { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+        {
+          name: 'description',
+          content:
+            'Ahmad Renhoran — A creative developer, reader, and writer. Crafting immersive digital experiences with heart.',
+        },
+        { name: 'theme-color', content: '#0a0a0f' },
+        // Open Graph
+        { property: 'og:type', content: 'website' },
+        { property: 'og:title', content: 'Ahmad Renhoran — Developer' },
+        {
+          property: 'og:description',
+          content: 'Creative developer, reader, and writer.',
+        },
+        { property: 'og:image', content: '/og-image.jpg' },
+        // Twitter
+        { name: 'twitter:card', content: 'summary_large_image' },
+        { name: 'twitter:title', content: 'Ahmad Renhoran — Developer' },
+        {
+          name: 'twitter:description',
+          content: 'Creative developer, reader, and writer.',
+        },
+        // SEO
+        { name: 'robots', content: 'index, follow' },
+        { name: 'author', content: 'Ahmad Renhoran' },
+      ],
+      link: [
+        { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
+        {
+          rel: 'preconnect',
+          href: 'https://fonts.googleapis.com',
+        },
+        {
+          rel: 'preconnect',
+          href: 'https://fonts.gstatic.com',
+          crossorigin: '',
+        },
+        {
+          rel: 'stylesheet',
+          href: 'https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=DM+Serif+Display:ital@0;1&display=swap',
+        },
+      ],
+    },
+  },
+
+  css: ['~/assets/css/main.css'],
+
+  compatibilityDate: '2024-11-01',
+})
