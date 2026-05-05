@@ -1,0 +1,78 @@
+{
+  "nav": {
+    "home": "Beranda",
+    "about": "Tentang",
+    "works": "Karya",
+    "blog": "Blog",
+    "contact": "Kontak",
+    "resume": "baca resume.",
+    "sayHi": "sapa saya.",
+    "writing": "menulis.",
+    "developing": "mengembangkan."
+  },
+  "hero": {
+    "roles": "pengembang · pembaca · penulis",
+    "title": "Saya Ahmad",
+    "titleHighlight": "Renhoran.",
+    "subtitle": "Seorang pengembang yang berdedikasi membangun perangkat lunak yang intuitif, siap untuk masa depan, dan bermanfaat.",
+    "viewWork": "Lihat Karya",
+    "sayHi": "Sapa saya →",
+    "scroll": "gulir"
+  },
+  "about": {
+    "title": "Membangun logika",
+    "titleHighlight": "melalui piksel.",
+    "desc1": "Saya seorang pengembang multi-disiplin yang berbasis di Indonesia dengan minat besar menciptakan pengalaman yang terasa hidup — di mana setiap piksel memiliki tujuan dan setiap kata memiliki makna.",
+    "desc2": "Saat saya tidak sedang membuat sesuatu, saya biasanya mencari inspirasi di dalam air atau menyelami buku yang bagus untuk mengeksplorasi perspektif baru.",
+    "skillsTitle": "Keahlian Utama",
+    "yearsExp": "Tahun peng.",
+    "projects": "Proyek",
+    "clients": "Klien"
+  },
+  "works": {
+    "label": "Karya terpilih",
+    "title": "Apa yang",
+    "titleHighlight": "saya buat.",
+    "allProjects": "Semua proyek →",
+    "viewCase": "Lihat Kasus",
+    "details": "Detail →"
+  },
+  "blog": {
+    "label": "Tulisan",
+    "title": "Kata-kata",
+    "titleHighlight": "saya.",
+    "readAll": "Baca semua →",
+    "read": "Baca →",
+    "readArticle": "Baca artikel →"
+  },
+  "contact": {
+    "label": "Hubungi saya",
+    "title": "Mari buat",
+    "title2": "sesuatu yang",
+    "titleHighlight": "indah.",
+    "desc": "Baik jika Anda memiliki proyek dalam pikiran, ingin berkolaborasi, atau sekadar ingin menyapa — kotak masuk saya selalu terbuka.",
+    "emailLabel": "Kirimkan saya email",
+    "emailCta": "Mari bicara",
+    "footerStatus": "Terbuka untuk peluang baru di 2024.",
+    "footerDesign": "Didesain & dikodekan dengan",
+    "footerBy": "oleh Ahmad Renhoran"
+  },
+  "projects": {
+    "back": "Kembali",
+    "title": "Semua Proyek",
+    "label": "Portofolio",
+    "headline": "Semua yang",
+    "headlineHighlight": "saya buat.",
+    "desc": "Kumpulan proyek desain, branding, ilustrasi, dan pengembangan yang telah saya kerjakan selama bertahun-tahun.",
+    "filterAll": "Semua"
+  },
+  "blogs": {
+    "back": "Kembali",
+    "title": "Semua Blog",
+    "label": "Tulisan",
+    "headline": "Semua kata",
+    "headlineHighlight": "saya.",
+    "desc": "Refleksi tentang desain, tulisan, kehidupan, dan segala sesuatu di antaranya. Diperbarui secara berkala.",
+    "filterAll": "Semua"
+  }
+}

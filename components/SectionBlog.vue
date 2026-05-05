@@ -1,19 +1,19 @@
 <template>
   <section class="section" id="blog" aria-label="Blog">
-    <div class="flex flex-col justify-center min-h-full py-24 px-12 md:px-20 lg:px-32">
+    <div class="flex flex-col justify-center min-h-full py-24 px-6 md:px-12 lg:px-24 xl:px-32">
       <div class="max-w-6xl mx-auto w-full">
 
         <!-- Header -->
         <div class="flex items-end justify-between mb-12 section-content" ref="headerRef">
           <div>
-            <p class="label-sm mb-3">Writing</p>
+            <p class="label-sm mb-3">{{ $t('blog.label') }}</p>
             <h2 class="display-lg">
-              Words I've<br />
-              <em class="font-serif not-italic" style="color: var(--gold)">thought.</em>
+              {{ $t('blog.title') }}<br />
+              <em class="font-serif not-italic" style="color: var(--gold)">{{ $t('blog.titleHighlight') }}</em>
             </h2>
           </div>
           <NuxtLink to="/blogs" class="text-xs font-medium tracking-wide opacity-50 hover:opacity-100 transition-opacity pb-2">
-            Read all →
+            {{ $t('blog.readAll') }}
           </NuxtLink>
         </div>
 
@@ -40,7 +40,7 @@
             <!-- Footer -->
             <div class="flex items-center justify-between pt-2" style="border-top: 1px solid hsl(var(--border))">
               <span class="text-xs" style="color: var(--text-secondary)">{{ post.readTime }}</span>
-              <span class="text-xs font-medium hover:opacity-70 transition-opacity cursor-pointer">Read →</span>
+              <span class="text-xs font-medium hover:opacity-70 transition-opacity cursor-pointer">{{ $t('blog.read') }}</span>
             </div>
           </article>
         </div>

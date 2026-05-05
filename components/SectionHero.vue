@@ -7,37 +7,36 @@
 
     <!-- Content overlay -->
     <div class="relative z-10 flex items-center h-full pointer-events-none">
-      <div class="pl-12 md:pl-16 max-w-sm section-content" ref="contentRef">
-        <p class="label-sm mb-4">developer · reader · writer</p>
+      <div class="pl-6 md:pl-12 lg:pl-20 max-w-sm section-content" ref="contentRef">
+        <p class="label-sm mb-4">{{ $t('hero.roles') }}</p>
         <h1 class="display-xl mb-6 leading-tight">
-          I'm Ahmad<br />
-          <em class="font-serif not-italic" style="color: var(--gold)">Renhoran.</em>
+          {{ $t('hero.title') }}<br />
+          <em class="font-serif not-italic" style="color: var(--gold)">{{ $t('hero.titleHighlight') }}</em>
         </h1>
         <p class="text-sm font-light leading-relaxed" style="color: var(--text-secondary); max-width: 280px">
-          A guy who loves build something cool.
+          {{ $t('hero.subtitle') }}
         </p>
         <div class="mt-10 flex gap-4 pointer-events-auto">
           <button class="btn-primary text-xs" @click="emit('scrollTo', 1)">
-            View Work
+            {{ $t('hero.viewWork') }}
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-              <path d="M2 6h8M6 2l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M2 6h8M6 2l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                stroke-linejoin="round" />
             </svg>
           </button>
-          <button
-            class="text-xs font-medium tracking-wide opacity-50 hover:opacity-100 transition-opacity"
-            @click="emit('scrollTo', 4)"
-          >
-            Say hi →
+          <button class="text-xs font-medium tracking-wide opacity-50 hover:opacity-100 transition-opacity"
+            @click="emit('scrollTo', 4)">
+            {{ $t('hero.sayHi') }}
           </button>
         </div>
       </div>
     </div>
 
     <!-- Scroll hint -->
-    <!-- <div class="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-2 opacity-30">
-      <span class="label-sm">scroll</span>
+    <div class="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-2 opacity-30">
+      <span class="label-sm">{{ $t('hero.scroll') }}</span>
       <div class="w-px h-8 bg-current" style="animation: pulse 2s ease-in-out infinite" />
-    </div> -->
+    </div>
   </section>
 </template>
 

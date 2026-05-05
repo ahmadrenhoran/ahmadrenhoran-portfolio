@@ -6,7 +6,7 @@ export default defineNuxtConfig({
     '@nuxtjs/tailwindcss',
     '@nuxtjs/color-mode',
     'shadcn-nuxt',
-    '@vueuse/nuxt',
+    '@vueuse/nuxt'
   ],
 
   colorMode: {
@@ -53,7 +53,7 @@ export default defineNuxtConfig({
         { name: 'author', content: 'Ahmad Renhoran' },
       ],
       link: [
-        { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
+        { rel: 'icon', type: 'image/svg+xml', href: '/logo.jpg' },
         {
           rel: 'preconnect',
           href: 'https://fonts.googleapis.com',

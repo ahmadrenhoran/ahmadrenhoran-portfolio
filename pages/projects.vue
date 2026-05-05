@@ -1,34 +1,24 @@
 <template>
   <div class="min-h-screen" style="background: hsl(var(--background)); color: hsl(var(--foreground))">
-    <!-- Back navigation -->
-    <header class="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl" style="background: hsl(var(--background) / 0.8); border-bottom: 1px solid hsl(var(--border))">
-      <div class="max-w-6xl mx-auto px-6 md:px-12 py-5 flex items-center justify-between">
-        <NuxtLink to="/" class="flex items-center gap-3 group">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="transition-transform group-hover:-translate-x-1">
-            <path d="M19 12H5M12 19l-7-7 7-7"/>
-          </svg>
-          <span class="text-xs font-semibold tracking-widest uppercase opacity-60 group-hover:opacity-100 transition-opacity">Back</span>
+    <!-- Header -->
+    <header class="py-20 mb-8 border-b border-white/5">
+      <div class="max-w-6xl mx-auto px-6 md:px-12 w-full">
+        <NuxtLink to="/" class="inline-flex items-center gap-2 text-xs font-medium opacity-50 hover:opacity-100 transition-opacity mb-12">
+          <span>←</span> {{ $t('projects.back') }}
         </NuxtLink>
-        <h1 class="font-serif text-lg">All Projects</h1>
-        <div class="w-16"></div>
+        <p class="label-sm mb-4">{{ $t('projects.label') }}</p>
+        <h1 class="display-lg mb-6">
+          {{ $t('projects.headline') }}<br />
+          <em class="font-serif not-italic" style="color: var(--gold)">{{ $t('projects.headlineHighlight') }}</em>
+        </h1>
+        <p class="text-sm leading-relaxed" style="color: var(--text-secondary); max-width: 400px">
+          {{ $t('projects.desc') }}
+        </p>
       </div>
     </header>
 
-    <!-- Page content -->
-    <main class="pt-28 pb-20 px-6 md:px-12">
+    <main class="pb-20 px-6 md:px-12">
       <div class="max-w-6xl mx-auto">
-        <!-- Page title -->
-        <div class="mb-16">
-          <p class="label-sm mb-4">Portfolio</p>
-          <h2 class="display-lg mb-4">
-            All the things<br />
-            <em class="font-serif not-italic" style="color: var(--gold)">I've made.</em>
-          </h2>
-          <p class="text-sm leading-relaxed" style="color: var(--text-secondary); max-width: 480px">
-            A collection of design, branding, illustration, and development projects I've worked on over the years.
-          </p>
-        </div>
-
         <!-- Filter tabs -->
         <div class="flex flex-wrap gap-2 mb-12">
           <button 
@@ -43,31 +33,40 @@
               ? 'background: var(--gold)' 
               : 'background: hsl(var(--muted)); border: 1px solid hsl(var(--border))'"
           >
-            {{ cat }}
+            {{ cat === 'All' ? $t('projects.filterAll') : cat }}
           </button>
         </div>
 
         <!-- Project grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <div
-            v-for="(project, i) in filteredProjects"
-            :key="project.title"
-            class="work-card"
-            :class="{ 'lg:col-span-2 lg:row-span-2': i === 0 }"
+            v-for="work in filteredProjects"
+            :key="work.title"
+            class="blog-card group cursor-pointer"
           >
-            <div class="absolute inset-0" :style="`background: ${project.color}`" />
-            <div class="absolute top-6 right-6 text-4xl select-none">{{ project.emoji }}</div>
-            <div class="absolute top-6 left-6">
-              <span class="text-xs font-medium px-3 py-1 rounded-full" style="background: hsl(0 0% 100% / 0.15); color: white; backdrop-filter: blur(8px)">
-                {{ project.tag }}
-              </span>
+            <!-- Header: Tag + Year -->
+            <div class="flex items-center justify-between mb-2">
+              <span class="label-sm">{{ work.tag }}</span>
+              <span class="text-xs opacity-50">{{ work.year }}</span>
             </div>
-            <div class="work-card-overlay">
-              <div>
-                <div class="text-white/60 text-xs font-medium mb-1">{{ project.year }}</div>
-                <div class="text-white text-lg font-semibold">{{ project.title }}</div>
-                <div class="text-white/70 text-xs mt-2 leading-relaxed">{{ project.desc }}</div>
+
+            <!-- Content -->
+            <div class="flex flex-col flex-1">
+              <h3 class="font-serif text-lg leading-snug group-hover:text-[var(--gold)] transition-colors">
+                {{ work.title }}
+              </h3>
+              <p class="text-xs leading-relaxed mt-2 opacity-60 flex-1">
+                {{ work.desc }}
+              </p>
+            </div>
+
+            <!-- Footer: Skill/Tech + Action -->
+            <div class="flex items-center justify-between pt-4 mt-4" style="border-top: 1px solid hsl(var(--border))">
+              <div class="flex items-center gap-2">
+                <span class="text-[1.2rem]">{{ work.emoji }}</span>
+                <span class="text-[10px] uppercase tracking-widest opacity-40">{{ $t('works.viewCase') }}</span>
               </div>
+              <span class="text-xs font-medium group-hover:translate-x-1 transition-transform">{{ $t('works.details') }}</span>
             </div>
           </div>
         </div>
@@ -78,8 +77,12 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { useHead } from '#imports'
+import { useI18n } from 'vue-i18n'
 
-useHead({ title: 'All Projects — Ahmad Renhoran' })
+const { t } = useI18n()
+
+useHead({ title: t('projects.title') + ' — Ahmad Renhoran' })
 
 const activeFilter = ref('All')
 const categories = ['All', 'Branding', 'UI/UX', 'Illustration', 'Mobile', 'Web']

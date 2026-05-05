@@ -7,9 +7,9 @@
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="transition-transform group-hover:-translate-x-1">
             <path d="M19 12H5M12 19l-7-7 7-7"/>
           </svg>
-          <span class="text-xs font-semibold tracking-widest uppercase opacity-60 group-hover:opacity-100 transition-opacity">Back</span>
+          <span class="text-xs font-semibold tracking-widest uppercase opacity-60 group-hover:opacity-100 transition-opacity">{{ $t('blogs.back') }}</span>
         </NuxtLink>
-        <h1 class="font-serif text-lg">All Blogs</h1>
+        <h1 class="font-serif text-lg">{{ $t('blogs.title') }}</h1>
         <div class="w-16"></div>
       </div>
     </header>
@@ -19,13 +19,13 @@
       <div class="max-w-6xl mx-auto">
         <!-- Page title -->
         <div class="mb-16">
-          <p class="label-sm mb-4">Writing</p>
+          <p class="label-sm mb-4">{{ $t('blogs.label') }}</p>
           <h2 class="display-lg mb-4">
-            All the words<br />
-            <em class="font-serif not-italic" style="color: var(--gold)">I've thought.</em>
+            {{ $t('blogs.headline') }}<br />
+            <em class="font-serif not-italic" style="color: var(--gold)">{{ $t('blogs.headlineHighlight') }}</em>
           </h2>
           <p class="text-sm leading-relaxed" style="color: var(--text-secondary); max-width: 480px">
-            Reflections on design, writing, life, and everything in between. Updated regularly.
+            {{ $t('blogs.desc') }}
           </p>
         </div>
 
@@ -43,7 +43,7 @@
               ? 'background: var(--gold)' 
               : 'background: hsl(var(--muted)); border: 1px solid hsl(var(--border))'"
           >
-            {{ cat }}
+            {{ cat === 'All' ? $t('blogs.filterAll') : cat }}
           </button>
         </div>
 
@@ -62,7 +62,7 @@
             <p class="text-sm leading-relaxed flex-1" style="color: var(--text-secondary)">{{ post.excerpt }}</p>
             <div class="flex items-center justify-between pt-3" style="border-top: 1px solid hsl(var(--border))">
               <span class="text-xs" style="color: var(--text-secondary)">{{ post.readTime }}</span>
-              <span class="text-xs font-semibold hover:opacity-70 transition-opacity cursor-pointer" style="color: var(--gold)">Read article →</span>
+              <span class="text-xs font-semibold hover:opacity-70 transition-opacity cursor-pointer" style="color: var(--gold)">{{ $t('blog.readArticle') }}</span>
             </div>
           </article>
         </div>
@@ -73,8 +73,12 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { useHead } from '#imports'
+import { useI18n } from 'vue-i18n'
 
-useHead({ title: 'All Blogs — Ahmad Renhoran' })
+const { t } = useI18n()
+
+useHead({ title: t('blogs.title') + ' — Ahmad Renhoran' })
 
 const activeFilter = ref('All')
 const categories = ['All', 'Design', 'Writing', 'Tutorial', 'Life', 'Motion']

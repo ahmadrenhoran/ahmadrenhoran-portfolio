@@ -1,0 +1,78 @@
+{
+  "nav": {
+    "home": "Home",
+    "about": "About",
+    "works": "Works",
+    "blog": "Blog",
+    "contact": "Contact",
+    "resume": "read resume.",
+    "sayHi": "say hi.",
+    "writing": "writing.",
+    "developing": "developing."
+  },
+  "hero": {
+    "roles": "developer · reader · writer",
+    "title": "I'm Ahmad",
+    "titleHighlight": "Renhoran.",
+    "subtitle": "A developer dedicated to building intuitive and future-ready software that matters.",
+    "viewWork": "View Work",
+    "sayHi": "Say hi →",
+    "scroll": "scroll"
+  },
+  "about": {
+    "title": "Crafting logic",
+    "titleHighlight": "through pixels.",
+    "desc1": "I'm a multi-disciplinary developer based in Indonesia with a passion for creating experiences that feel alive — where every pixel has a purpose and every word carries weight.",
+    "desc2": "When I'm not crafting anything, I’m usually finding my flow in the water or diving into a good book to explore new perspectives.",
+    "skillsTitle": "Core Skills",
+    "yearsExp": "Years exp.",
+    "projects": "Projects",
+    "clients": "Clients"
+  },
+  "works": {
+    "label": "Selected works",
+    "title": "Things I've",
+    "titleHighlight": "made.",
+    "allProjects": "All projects →",
+    "viewCase": "View Case",
+    "details": "Details →"
+  },
+  "blog": {
+    "label": "Writing",
+    "title": "Words I've",
+    "titleHighlight": "thought.",
+    "readAll": "Read all →",
+    "read": "Read →",
+    "readArticle": "Read article →"
+  },
+  "contact": {
+    "label": "Get in touch",
+    "title": "Let's make",
+    "title2": "something",
+    "titleHighlight": "beautiful.",
+    "desc": "Whether you have a project in mind, want to collaborate, or just want to say hello — my inbox is always open.",
+    "emailLabel": "Send me an email",
+    "emailCta": "Let's talk",
+    "footerStatus": "Open for new opportunities in 2024.",
+    "footerDesign": "Designed & coded with",
+    "footerBy": "by Ahmad Renhoran"
+  },
+  "projects": {
+    "back": "Back",
+    "title": "All Projects",
+    "label": "Portfolio",
+    "headline": "All the things",
+    "headlineHighlight": "I've made.",
+    "desc": "A collection of design, branding, illustration, and development projects I've worked on over the years.",
+    "filterAll": "All"
+  },
+  "blogs": {
+    "back": "Back",
+    "title": "All Blogs",
+    "label": "Writing",
+    "headline": "All the words",
+    "headlineHighlight": "I've thought.",
+    "desc": "Reflections on design, writing, life, and everything in between. Updated regularly.",
+    "filterAll": "All"
+  }
+}

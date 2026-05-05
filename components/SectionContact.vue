@@ -1,19 +1,18 @@
 <template>
   <section class="section" id="contact" aria-label="Contact">
-    <div class="flex items-center min-h-full py-24 px-12 md:px-20 lg:px-32">
+    <div class="flex items-center min-h-full py-24 px-6 md:px-12 lg:px-24 xl:px-32">
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-32 w-full max-w-6xl mx-auto">
 
         <!-- Left: Big CTA -->
         <div class="flex flex-col justify-center section-content" ref="leftRef">
-          <p class="label-sm mb-6">Get in touch</p>
+          <p class="label-sm mb-6">{{ $t('contact.label') }}</p>
           <h2 class="display-lg mb-6">
-            Let's make<br />
-            something
-            <em class="font-serif not-italic block" style="color: var(--gold)">beautiful.</em>
+            {{ $t('contact.title') }}<br />
+            {{ $t('contact.title2') }}
+            <em class="font-serif not-italic block" style="color: var(--gold)">{{ $t('contact.titleHighlight') }}</em>
           </h2>
           <p class="text-sm leading-relaxed mb-10" style="color: var(--text-secondary); max-width: 360px">
-            Whether you have a project in mind, want to collaborate, or just want to say hello —
-            my inbox is always open.
+            {{ $t('contact.desc') }}
           </p>
 
           <!-- Social links -->
@@ -38,12 +37,29 @@
 
           <!-- Email direct -->
           <div class="mt-10 pt-8" style="border-top: 1px solid hsl(var(--border))">
-            <a
-              href="mailto:hello@hoangnguyen.design"
-              class="font-serif text-xl hover:opacity-70 transition-opacity"
-            >
-              hello@hoangnguyen.design
+            <p class="text-xs mb-3" style="color: var(--text-secondary)">{{ $t('contact.emailLabel') }}</p>
+            <a href="mailto:hello@example.com" class="text-xl font-medium hover:opacity-70 transition-opacity">
+              {{ $t('contact.emailCta') }} ↗
             </a>
+          </div>
+
+          <!-- Status -->
+          <div class="mb-10 lg:mb-0 section-content" ref="statusRef">
+            <div class="flex items-center gap-3 px-4 py-3 rounded-full text-xs font-medium w-max"
+                 style="background: hsl(var(--muted)); border: 1px solid hsl(var(--border))">
+              <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+              {{ $t('contact.footerStatus') }}
+            </div>
+          </div>
+
+          <!-- Footer info -->
+          <div class="flex flex-col gap-2 section-content" ref="footerRef">
+            <p class="text-xs" style="color: var(--text-secondary)">
+              {{ $t('contact.footerDesign') }} ☕️ {{ $t('contact.footerBy') }}
+            </p>
+            <p class="text-[10px] uppercase tracking-widest opacity-40">
+              © {{ new Date().getFullYear() }} — All rights reserved.
+            </p>
           </div>
         </div>
 
