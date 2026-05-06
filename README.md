@@ -1,3 +1,11 @@
+---
+title: Portfolio FE
+emoji: 🚀
+colorFrom: blue
+colorTo: indigo
+sdk: docker
+pinned: false
+---
 # 🌐 Portfolio Management - Public Showcase
 
 This is the public-facing portfolio website template built with Nuxt 3. It serves as a reference implementation for consuming the Portfolio Management Headless API.
