@@ -6,8 +6,15 @@ export default defineNuxtConfig({
     '@nuxtjs/tailwindcss',
     '@nuxtjs/color-mode',
     'shadcn-nuxt',
-    '@vueuse/nuxt'
+    '@vueuse/nuxt',
+    '@pinia/nuxt'
   ],
+
+  runtimeConfig: {
+    public: {
+      apiBase: process.env.VITE_API_BASE_URL || 'https://acaca28-backend.hf.space/api'
+    }
+  },
 
   colorMode: {
     classSuffix: '',

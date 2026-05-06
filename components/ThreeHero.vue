@@ -5,6 +5,11 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { useColorMode } from '#imports'
+import { gsap } from 'gsap'
+
+const props = defineProps<{
+  currentSection: number
+}>()
 
 const canvasRef = ref<HTMLCanvasElement | null>(null)
 const colorMode = useColorMode()
@@ -12,275 +17,204 @@ const colorMode = useColorMode()
 let animationId: number
 let renderer: any, scene: any, camera: any, THREE: any
 
-let raycaster: any
-let instancedMesh: any
-let dummy: any
-let colorObj: any
+let group: any
+let pointCloud: any
 
-let isDragging = false
-let previousMousePosition = { x: 0, y: 0 }
-let dragDistance = 0
 let targetRotation = { x: 0, y: 0 }
 let currentRotation = { x: 0, y: 0 }
+let mouseX = 0
+let mouseY = 0
 
-let globalHueShift = 0
+const emotions = ['happy', 'sad', 'angry', 'dizzy', 'laugh', 'cool']
+let currentEmotionIndex = 0
+
+const NUM_POINTS = 600
+let targetPositions: Float32Array
+let jitters: Float32Array
 
 async function init() {
   if (!canvasRef.value) return
 
-  // Dynamic import for SSR safety
   THREE = await import('three')
-  
-  dummy = new THREE.Object3D()
-  colorObj = new THREE.Color()
-  raycaster = new THREE.Raycaster()
 
   const canvas = canvasRef.value
-  const W = canvas.clientWidth || window.innerWidth
-  const H = canvas.clientHeight || window.innerHeight
+  const W = window.innerWidth
+  const H = window.innerHeight
 
-  // Scene
   scene = new THREE.Scene()
-
-  // Camera
   camera = new THREE.PerspectiveCamera(55, W / H, 0.1, 1000)
   camera.position.set(0, 0, 5)
 
-  // Renderer
   renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true })
   renderer.setSize(W, H)
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
   renderer.setClearColor(0x000000, 0)
 
-  buildScene()
-  animate()
-
-  window.addEventListener('resize', onResize)
-  canvas.addEventListener('mousemove', onMouseMove)
-  canvas.addEventListener('mousedown', onMouseDown)
-  canvas.addEventListener('mouseup', onMouseUp)
-  canvas.addEventListener('mouseleave', onMouseUp)
-  canvas.addEventListener('click', onClick)
-}
-
-let mouseX = 0, mouseY = 0
-
-function onMouseDown(e: MouseEvent) {
-  isDragging = true
-  dragDistance = 0
-  previousMousePosition = { x: e.clientX, y: e.clientY }
-  if (canvasRef.value) canvasRef.value.style.cursor = 'grabbing'
-}
-
-function onMouseUp(e: MouseEvent) {
-  isDragging = false
-  if (canvasRef.value) canvasRef.value.style.cursor = 'default'
-}
-
-function onMouseMove(e: MouseEvent) {
-  const rect = canvasRef.value!.getBoundingClientRect()
-  mouseX = ((e.clientX - rect.left) / rect.width) * 2 - 1
-  mouseY = -((e.clientY - rect.top) / rect.height) * 2 + 1
-  
-  if (isDragging) {
-    const deltaX = e.clientX - previousMousePosition.x
-    const deltaY = e.clientY - previousMousePosition.y
-    dragDistance += Math.abs(deltaX) + Math.abs(deltaY)
-    
-    targetRotation.y += deltaX * 0.005
-    targetRotation.x += deltaY * 0.005
-    
-    previousMousePosition = { x: e.clientX, y: e.clientY }
-  }
-  
-  if (raycaster && camera && instancedMesh && !isDragging) {
-    raycaster.setFromCamera(new THREE.Vector2(mouseX, mouseY), camera)
-    
-    objects.forEach(o => o.isHovered = false)
-    if (canvasRef.value) canvasRef.value.style.cursor = 'grab'
-    
-    const intersects = raycaster.intersectObject(instancedMesh)
-    if (intersects.length > 0) {
-      const instanceId = intersects[0].instanceId
-      if (instanceId !== undefined) {
-        objects[instanceId].isHovered = true
-        if (canvasRef.value) canvasRef.value.style.cursor = 'pointer'
-      }
-    }
-  }
-}
-
-function onClick(e: MouseEvent) {
-  if (!instancedMesh || !raycaster || dragDistance > 5) return // Ignore if dragging
-  
-  raycaster.setFromCamera(new THREE.Vector2(mouseX, mouseY), camera)
-  const intersects = raycaster.intersectObject(instancedMesh)
-  if (intersects.length > 0) {
-    const instanceId = intersects[0].instanceId
-    if (instanceId !== undefined && clock) {
-      const hitPos = objects[instanceId].basePos
-      const t = clock.getElapsedTime()
-      
-      // Shift the hue drastically to change the whole sphere color
-      globalHueShift += 100 + Math.random() * 160
-      
-      // Calculate ripple delays based on distance
-      objects.forEach(obj => {
-         const distance = obj.basePos.distanceTo(hitPos)
-         // Max distance is ~2.8, * 0.15 gives a ~0.4s wave propagation
-         obj.hitTime = t + distance * 0.15 
-         obj.targetHueOffset = obj.baseHueOffset + globalHueShift
-      })
-    }
-  }
-}
-
-const objects: any[] = []
-const bolts: any[] = []
-let group: any
-
-function isDark() {
-  return colorMode.value === 'dark'
-}
-
-function makeLightningPoints(from: any, to: any, segments: number, jitter: number) {
-  const points = []
-  const dir = new THREE.Vector3().subVectors(to, from)
-  const perp1 = new THREE.Vector3()
-  const perp2 = new THREE.Vector3()
-  
-  if (Math.abs(dir.x) < 0.9) {
-    perp1.crossVectors(dir, new THREE.Vector3(1, 0, 0)).normalize()
-  } else {
-    perp1.crossVectors(dir, new THREE.Vector3(0, 1, 0)).normalize()
-  }
-  perp2.crossVectors(dir, perp1).normalize()
-  
-  points.push(from.clone())
-  for (let k = 1; k < segments; k++) {
-    const t = k / segments
-    const p = new THREE.Vector3().lerpVectors(from, to, t)
-    p.add(perp1.clone().multiplyScalar((Math.random() - 0.5) * jitter))
-    p.add(perp2.clone().multiplyScalar((Math.random() - 0.5) * jitter))
-    points.push(p)
-  }
-  points.push(to.clone())
-  return points
-}
-
-function buildScene() {
-  while (scene.children.length > 0) scene.remove(scene.children[0])
-  objects.length = 0
-  bolts.length = 0
-
-  const dark = isDark()
-  const lineColor = dark ? 0x3a8a5a : 0x4abf7a
-  const accentColor = dark ? 0x53d480 : 0x4cc96f
-
-  const ambient = new THREE.AmbientLight(0xffffff, dark ? 0.4 : 0.6)
-  scene.add(ambient)
-
-  const light1 = new THREE.PointLight(dark ? 0x44ff88 : 0x33cc66, dark ? 2 : 1.5, 20)
-  light1.position.set(3, 3, 3)
-  scene.add(light1)
-
-  const light2 = new THREE.PointLight(accentColor, 1, 15)
-  light2.position.set(-3, -2, 2)
-  scene.add(light2)
+  const dark = colorMode.value === 'dark'
 
   group = new THREE.Group()
   scene.add(group)
 
-  const nodeCount = 200
-  const radius = 1.4
-  const positions: any[] = []
-  
-  const nodeGeo = new THREE.SphereGeometry(0.04, 16, 16)
-  const nodeMat = new THREE.MeshBasicMaterial({ 
-    color: 0xffffff
-  })
-  
-  instancedMesh = new THREE.InstancedMesh(nodeGeo, nodeMat, nodeCount)
-  instancedMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage)
-  group.add(instancedMesh)
-  
-  for (let i = 0; i < nodeCount; i++) {
-    const phi = Math.acos(-1 + (2 * i) / nodeCount)
-    const theta = Math.sqrt(nodeCount * Math.PI) * phi
-    
-    const x = radius * Math.cos(theta) * Math.sin(phi)
-    const y = radius * Math.sin(theta) * Math.sin(phi)
-    const z = radius * Math.cos(phi)
-    
-    positions.push(new THREE.Vector3(x, y, z))
-    
-    const initialHueOffset = Math.random() * 360
-    
-    objects.push({ 
-      index: i,
-      basePos: new THREE.Vector3(x, y, z),
-      baseHueOffset: initialHueOffset,
-      hueOffset: initialHueOffset,
-      targetHueOffset: initialHueOffset,
-      animSpeed: 0.3 + Math.random() * 0.8,
-      hitTime: -999,
-      isHovered: false
-    })
-    
-    dummy.position.set(x, y, z)
-    dummy.updateMatrix()
-    instancedMesh.setMatrixAt(i, dummy.matrix)
-    instancedMesh.setColorAt(i, colorObj.setHex(0xffffff))
+  const geometry = new THREE.BufferGeometry()
+  const positions = new Float32Array(NUM_POINTS * 3)
+  targetPositions = new Float32Array(NUM_POINTS * 3)
+  jitters = new Float32Array(NUM_POINTS * 3)
+
+  for (let i = 0; i < NUM_POINTS; i++) {
+    // Initial random positions
+    positions[i * 3] = (Math.random() - 0.5) * 4
+    positions[i * 3 + 1] = (Math.random() - 0.5) * 4
+    positions[i * 3 + 2] = (Math.random() - 0.5) * 2
+
+    // Fixed jitter for messy look
+    jitters[i * 3] = (Math.random() - 0.5) * 0.15
+    jitters[i * 3 + 1] = (Math.random() - 0.5) * 0.15
+    jitters[i * 3 + 2] = (Math.random() - 0.5) * 0.05
   }
-  instancedMesh.instanceMatrix.needsUpdate = true
-  if (instancedMesh.instanceColor) instancedMesh.instanceColor.needsUpdate = true
-  
-  // Lightning bolt connection lines (static) + traveling light pulses
-  const lineMat = new THREE.LineBasicMaterial({ 
-    color: lineColor, 
-    transparent: true, 
-    opacity: dark ? 0.25 : 0.15 
-  })
-  
-  const pulseGeo = new THREE.SphereGeometry(0.025, 8, 8)
-  const pulseMat = new THREE.MeshBasicMaterial({ 
-    color: dark ? 0x66ffaa : 0x44dd88,
+
+  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3))
+
+  // Custom point material (Techy neon dots)
+  const material = new THREE.PointsMaterial({
+    color: dark ? 0x4ade80 : 0x22c55e,
+    size: 0.06,
     transparent: true,
-    opacity: 0.9
+    opacity: 0.8,
+    sizeAttenuation: true
   })
+
+  pointCloud = new THREE.Points(geometry, material)
+  group.add(pointCloud)
+
+  setEmotion('happy') // Set initial target points
+  applySectionTransform(props.currentSection, true)
   
-  for (let i = 0; i < nodeCount; i++) {
-    for (let j = i + 1; j < nodeCount; j++) {
-      const dist = positions[i].distanceTo(positions[j])
-      if (dist < 0.52) {
-        const segments = 5
-        const jitter = dist * 0.18
-        const boltPoints = makeLightningPoints(positions[i], positions[j], segments, jitter)
-        const geo = new THREE.BufferGeometry().setFromPoints(boltPoints)
-        const line = new THREE.Line(geo, lineMat)
-        group.add(line)
-        
-        // Create a pulse (small glowing sphere) that travels along this bolt
-        const pulse = new THREE.Mesh(pulseGeo, pulseMat.clone())
-        pulse.visible = false
-        group.add(pulse)
-        
-        bolts.push({ 
-          line, 
-          pulse,
-          path: boltPoints, 
-          from: positions[i], 
-          to: positions[j],
-          speed: 0.8 + Math.random() * 1.5,    // travel speed
-          delay: Math.random() * 8,              // start delay
-          cooldown: 2 + Math.random() * 5,       // pause between pulses
-          progress: 0,
-          active: false,
-          lastFinished: -999
-        })
-      }
+  animate()
+
+  window.addEventListener('resize', onResize)
+  window.addEventListener('mousemove', onMouseMove)
+  window.addEventListener('click', onClick)
+}
+
+// ---- Geometry Generators for Point Cloud ---- //
+
+function getCircle(count: number, cx: number, cy: number, r: number) {
+  const pts = []
+  for (let i = 0; i < count; i++) {
+    const angle = (i / count) * Math.PI * 2
+    pts.push({ x: cx + Math.cos(angle) * r, y: cy + Math.sin(angle) * r })
+  }
+  return pts
+}
+
+function getArc(count: number, cx: number, cy: number, r: number, startA: number, endA: number) {
+  const pts = []
+  for (let i = 0; i < count; i++) {
+    const angle = startA + (i / Math.max(1, count - 1)) * (endA - startA)
+    pts.push({ x: cx + Math.cos(angle) * r, y: cy + Math.sin(angle) * r })
+  }
+  return pts
+}
+
+function getLine(count: number, x1: number, y1: number, x2: number, y2: number) {
+  const pts = []
+  for (let i = 0; i < count; i++) {
+    const t = i / Math.max(1, count - 1)
+    pts.push({ x: x1 + (x2 - x1) * t, y: y1 + (y2 - y1) * t })
+  }
+  return pts
+}
+
+function getCross(count: number, cx: number, cy: number, size: number) {
+  const pts = []
+  const half = Math.floor(count / 2)
+  pts.push(...getLine(half, cx - size, cy - size, cx + size, cy + size))
+  pts.push(...getLine(count - half, cx - size, cy + size, cx + size, cy - size))
+  return pts
+}
+
+function getAngle(count: number, cx: number, cy: number, size: number, facingRight: boolean) {
+  const pts = []
+  const half = Math.floor(count / 2)
+  if (facingRight) { // >
+    pts.push(...getLine(half, cx - size, cy + size, cx + size, cy))
+    pts.push(...getLine(count - half, cx + size, cy, cx - size, cy - size))
+  } else { // <
+    pts.push(...getLine(half, cx + size, cy + size, cx - size, cy))
+    pts.push(...getLine(count - half, cx - size, cy, cx + size, cy - size))
+  }
+  return pts
+}
+
+function setEmotion(emotion: string) {
+  if (!targetPositions) return
+  
+  const pts: any[] = []
+  
+  // Head Outline (300 pts)
+  pts.push(...getCircle(300, 0, 0, 1.3))
+  
+  // Eyes (80 pts each)
+  if (emotion === 'happy') {
+    pts.push(...getArc(80, -0.4, 0.3, 0.2, 0, Math.PI)) // ^
+    pts.push(...getArc(80, 0.4, 0.3, 0.2, 0, Math.PI))  // ^
+  } else if (emotion === 'sad' || emotion === 'cool') {
+    pts.push(...getCircle(80, -0.4, 0.3, 0.15)) // o
+    pts.push(...getCircle(80, 0.4, 0.3, 0.15))  // o
+  } else if (emotion === 'angry') {
+    pts.push(...getLine(80, -0.6, 0.5, -0.2, 0.1)) // \ 
+    pts.push(...getLine(80, 0.2, 0.1, 0.6, 0.5))   // /
+  } else if (emotion === 'dizzy') {
+    pts.push(...getCross(80, -0.4, 0.3, 0.2))
+    pts.push(...getCross(80, 0.4, 0.3, 0.2))
+  } else if (emotion === 'laugh') {
+    pts.push(...getAngle(80, -0.4, 0.3, 0.2, true))  // >
+    pts.push(...getAngle(80, 0.4, 0.3, 0.2, false)) // <
+  }
+  
+  // Mouth (140 pts)
+  if (emotion === 'happy' || emotion === 'laugh') {
+    pts.push(...getArc(140, 0, -0.1, 0.5, Math.PI, Math.PI * 2)) // U
+  } else if (emotion === 'sad' || emotion === 'angry') {
+    pts.push(...getArc(140, 0, -0.5, 0.5, 0, Math.PI)) // n
+  } else if (emotion === 'dizzy') {
+    pts.push(...getCircle(140, 0, -0.4, 0.25)) // O
+  } else if (emotion === 'cool') {
+    pts.push(...getLine(140, -0.3, -0.3, 0.3, -0.3)) // -
+  }
+
+  // Update target array
+  for (let i = 0; i < NUM_POINTS; i++) {
+    if (pts[i]) {
+      targetPositions[i * 3] = pts[i].x
+      targetPositions[i * 3 + 1] = pts[i].y
+      targetPositions[i * 3 + 2] = 0 // Keep it flat 2D
     }
   }
+}
+
+function onMouseMove(e: MouseEvent) {
+  mouseX = (e.clientX / window.innerWidth) * 2 - 1
+  mouseY = -(e.clientY / window.innerHeight) * 2 + 1
+
+  targetRotation.y = mouseX * 0.4
+  targetRotation.x = -mouseY * 0.4
+}
+
+function onClick() {
+  if (!group) return
+  
+  currentEmotionIndex = (currentEmotionIndex + 1) % emotions.length
+  setEmotion(emotions[currentEmotionIndex])
+
+  // Bounce and scatter effect on click
+  gsap.to(group.position, {
+    y: group.position.y,
+    duration: 0.15,
+    yoyo: true,
+    repeat: 1,
+    ease: 'power1.inOut'
+  })
 }
 
 let clock: any
@@ -290,122 +224,77 @@ function animate() {
   if (!clock) clock = new THREE.Clock()
   animationId = requestAnimationFrame(animate)
 
-  const t = clock.getElapsedTime()
-  
-  // Animate light pulses traveling along bolts
-  bolts.forEach(bolt => {
-    if (!bolt.active) {
-      // Check if it's time to start a new pulse
-      if (t > bolt.delay && t - bolt.lastFinished > bolt.cooldown) {
-        bolt.active = true
-        bolt.progress = 0
-        bolt.pulse.visible = true
-        bolt.pulse.material.opacity = 0.9
-      }
-    }
-    
-    if (bolt.active) {
-      bolt.progress += 0.02 * bolt.speed
-      
-      if (bolt.progress >= 1) {
-        // Pulse reached the end
-        bolt.active = false
-        bolt.pulse.visible = false
-        bolt.lastFinished = t
-        bolt.progress = 0
-      } else {
-        // Interpolate position along the path
-        const path = bolt.path
-        const totalSegments = path.length - 1
-        const segFloat = bolt.progress * totalSegments
-        const segIndex = Math.min(Math.floor(segFloat), totalSegments - 1)
-        const segT = segFloat - segIndex
-        
-        const p = new THREE.Vector3().lerpVectors(path[segIndex], path[segIndex + 1], segT)
-        bolt.pulse.position.copy(p)
-        
-        // Fade in/out at edges
-        const fade = Math.sin(bolt.progress * Math.PI)
-        bolt.pulse.material.opacity = fade * 0.95
-        const s = 0.8 + fade * 0.6
-        bolt.pulse.scale.set(s, s, s)
-      }
-    }
-  })
+  const time = clock.getElapsedTime()
 
-  if (group) {
-    // Smoothly interpolate rotation
+  if (group && pointCloud && targetPositions) {
+    // Plane tracking cursor
     currentRotation.x += (targetRotation.x - currentRotation.x) * 0.1
     currentRotation.y += (targetRotation.y - currentRotation.y) * 0.1
     
-    // Auto idle rotation if not dragging
-    if (!isDragging) {
-      targetRotation.y += 0.0015
-      targetRotation.x += (mouseY * 0.1 - targetRotation.x) * 0.02
-    }
-    
     group.rotation.x = currentRotation.x
     group.rotation.y = currentRotation.y
-  }
+    
+    const positions = pointCloud.geometry.attributes.position.array
 
-  objects.forEach(obj => {
-    let timeSinceHit = 999
-    
-    // Check if the ripple has reached this node
-    if (obj.hitTime !== -999) {
-      if (t >= obj.hitTime) {
-        timeSinceHit = t - obj.hitTime
-        // Smoothly transition hue to new target
-        obj.hueOffset += (obj.targetHueOffset - obj.hueOffset) * 0.01
-      } else {
-        // Ripple is still travelling towards this node
-        timeSinceHit = 999 
-      }
+    // Morph points to target positions
+    for (let i = 0; i < NUM_POINTS; i++) {
+      const ix = i * 3
+      
+      // Dynamic messy jitter (breathes over time)
+      const jx = Math.sin(time * 3 + i) * 0.05 + jitters[ix]
+      const jy = Math.cos(time * 3 + i) * 0.05 + jitters[ix + 1]
+      
+      const cx = positions[ix]
+      const cy = positions[ix + 1]
+      const cz = positions[ix + 2]
+      
+      const tx = targetPositions[ix]
+      const ty = targetPositions[ix + 1]
+      const tz = targetPositions[ix + 2]
+      
+      // Lerp
+      positions[ix] += (tx + jx - cx) * 0.1
+      positions[ix + 1] += (ty + jy - cy) * 0.1
+      positions[ix + 2] += (tz - cz) * 0.1
     }
     
-    const hitEffect = timeSinceHit < 1.0 ? Math.sin(timeSinceHit * Math.PI) * 0.7 : 0
-    const hoverEffect = obj.isHovered ? 0.3 : 0
-    
-    const wave = Math.sin(t * obj.animSpeed * 1.5 + obj.hueOffset) * 0.05 + hitEffect * 0.2 + hoverEffect * 0.1
-    dummy.position.copy(obj.basePos).multiplyScalar(1 + wave)
-    
-    const scale = 1 + hitEffect * 2.0 + hoverEffect
-    dummy.scale.set(scale, scale, scale)
-    
-    dummy.updateMatrix()
-    instancedMesh.setMatrixAt(obj.index, dummy.matrix)
-    
-    const isDark = colorMode?.value === 'dark'
-    const baseHue = isDark ? 140 : 130
-    const hueRange = 40
-    
-    let currentHue = baseHue + Math.sin(t * obj.animSpeed + obj.hueOffset) * hueRange
-    let lightness = 0.75 + Math.sin(t * obj.animSpeed * 0.5) * 0.1
-    let saturation = 0.95
-    
-    if (timeSinceHit < 1.0 || obj.isHovered) {
-       lightness = 0.95
-       saturation = 1.0
-    }
-    
-    const normalizedHue = ((currentHue % 360) + 360) % 360
-    colorObj.setHSL(normalizedHue / 360, saturation, lightness)
-    instancedMesh.setColorAt(obj.index, colorObj)
-  })
-  
-  instancedMesh.instanceMatrix.needsUpdate = true
-  if (instancedMesh.instanceColor) instancedMesh.instanceColor.needsUpdate = true
+    pointCloud.geometry.attributes.position.needsUpdate = true
+  }
 
   renderer.render(scene, camera)
 }
 
 function onResize() {
-  if (!renderer || !camera || !canvasRef.value) return
+  if (!renderer || !camera) return
   const W = window.innerWidth
   const H = window.innerHeight
   camera.aspect = W / H
   camera.updateProjectionMatrix()
   renderer.setSize(W, H)
+}
+
+function applySectionTransform(section: number, immediate: boolean = false) {
+  if (!group) return
+  
+  const isMobile = window.innerWidth < 768
+
+  const states: Record<number, any> = {
+    0: { pos: { x: isMobile ? 0 : 0, y: isMobile ? 2.5 : 0, z: -2 }, scale: isMobile ? 0.6 : 1.2 },
+    1: { pos: { x: isMobile ? 1.5 : 0, y: isMobile ? 3.2 : 2, z: -4 }, scale: isMobile ? 0.5 : 0.8 },
+    2: { pos: { x: isMobile ? -1.5 : -7.5, y: isMobile ? -3.2 : -2, z: -4 }, scale: isMobile ? 0.5 : 0.6 },
+    3: { pos: { x: isMobile ? 0 : 0, y: isMobile ? 3.2 : 2.5, z: -4 }, scale: isMobile ? 0.5 : 0.8 },
+    4: { pos: { x: isMobile ? 1.5 : 3.5, y: isMobile ? -3.2 : -3, z: -4 }, scale: isMobile ? 0.5 : 0.6 }
+  }
+
+  const state = states[section] || states[0]
+
+  if (immediate) {
+    group.position.set(state.pos.x, state.pos.y, state.pos.z)
+    group.scale.set(state.scale, state.scale, state.scale)
+  } else {
+    gsap.to(group.position, { ...state.pos, duration: 1.5, ease: 'power3.inOut' })
+    gsap.to(group.scale, { x: state.scale, y: state.scale, z: state.scale, duration: 1.5, ease: 'power3.inOut' })
+  }
 }
 
 onMounted(() => {
@@ -415,17 +304,25 @@ onMounted(() => {
 onUnmounted(() => {
   cancelAnimationFrame(animationId)
   window.removeEventListener('resize', onResize)
-  if (canvasRef.value) {
-     canvasRef.value.removeEventListener('mousemove', onMouseMove)
-     canvasRef.value.removeEventListener('mousedown', onMouseDown)
-     canvasRef.value.removeEventListener('mouseup', onMouseUp)
-     canvasRef.value.removeEventListener('mouseleave', onMouseUp)
-     canvasRef.value.removeEventListener('click', onClick)
-  }
+  window.removeEventListener('mousemove', onMouseMove)
+  window.removeEventListener('click', onClick)
   renderer?.dispose()
 })
 
 watch(() => colorMode.value, () => {
-  if (scene) buildScene()
+  if (scene) {
+    // Force material update
+    pointCloud.material.color.set(colorMode.value === 'dark' ? 0x4ade80 : 0x22c55e)
+  }
+})
+
+watch(() => props.currentSection, (newSection) => {
+  applySectionTransform(newSection)
+  
+  // Update emot based on section context
+  const secEmotions = ['happy', 'cool', 'angry', 'dizzy', 'sad']
+  const targetEmotion = secEmotions[newSection] || 'happy'
+  setEmotion(targetEmotion)
+  currentEmotionIndex = emotions.indexOf(targetEmotion)
 })
 </script>

@@ -1,5 +1,10 @@
 <template>
   <div class="page-home">
+    <!-- 3D Background Sphere -->
+    <ClientOnly>
+      <ThreeHero :current-section="currentSection" class="fixed inset-0 w-full h-full z-40 pointer-events-none" />
+    </ClientOnly>
+
     <!-- Grain overlay -->
     <div class="grain" aria-hidden="true" />
 
@@ -70,8 +75,8 @@
       <div class="sections-wrapper" ref="wrapperRef">
         <SectionHero @scroll-to="scrollTo" />
         <SectionAbout />
-        <SectionWorks />
-        <SectionBlog />
+        <SectionWorks :works="portfolioStore.projects" />
+        <SectionBlog :posts="portfolioStore.blogs" />
         <SectionContact />
       </div>
     </div>
@@ -83,11 +88,13 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useColorMode } from '#imports'
 import { gsap } from 'gsap'
 import { useI18n } from 'vue-i18n'
+import { usePortfolioStore } from '~/stores/portfolio'
 
 /* ── Color mode & i18n ───────────────────────────────────────── */
 const colorMode = useColorMode()
 const isDark = computed(() => colorMode.value === 'dark')
 const { t, locale } = useI18n()
+const portfolioStore = usePortfolioStore()
 
 function toggleColorMode() {
   colorMode.preference = isDark.value ? 'light' : 'dark'
@@ -237,7 +244,10 @@ function onResize() {
 }
 
 /* ── Mount / Unmount ─────────────────────────────────────────── */
-onMounted(() => {
+onMounted(async () => {
+  // Fetch portfolio data once
+  portfolioStore.fetchPublicData('ahmadrenhoran')
+
   // SETTING 3D: Wajib ditambahkan agar efek rotasi Z dan Y terlihat
   gsap.set(containerRef.value, { perspective: 1500 })
   gsap.set(wrapperRef.value, { transformStyle: 'preserve-3d' })

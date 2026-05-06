@@ -1,10 +1,5 @@
 <template>
   <section class="section" id="home" aria-label="Hero">
-    <!-- Three.js canvas fills the section -->
-    <ClientOnly>
-      <ThreeHero />
-    </ClientOnly>
-
     <!-- Content overlay -->
     <div class="relative z-10 flex items-center h-full pointer-events-none">
       <div class="pl-6 md:pl-12 lg:pl-20 max-w-sm section-content" ref="contentRef">

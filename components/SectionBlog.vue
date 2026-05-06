@@ -18,31 +18,35 @@
         </div>
 
         <!-- Blog cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 section-content" ref="cardsRef">
+        <div v-if="posts.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 section-content" ref="cardsRef">
           <article
             v-for="post in posts"
-            :key="post.title"
-            class="blog-card"
+            :key="post.id"
+            class="blog-card cursor-pointer"
             :aria-label="post.title"
+            @click="readPost(post)"
           >
             <!-- Tag + time -->
             <div class="flex items-center justify-between">
-              <span class="label-sm">{{ post.tag }}</span>
-              <time class="text-xs" style="color: var(--text-secondary)">{{ post.date }}</time>
+              <span class="label-sm">{{ post.tag || 'Writing' }}</span>
+              <time class="text-xs" style="color: var(--text-secondary)">{{ formatDate(post.createdAt) }}</time>
             </div>
 
             <!-- Title -->
-            <h3 class="font-serif text-lg leading-snug">{{ post.title }}</h3>
+            <h3 class="font-serif text-lg leading-snug group-hover:text-[var(--gold)] transition-colors">{{ post.title }}</h3>
 
             <!-- Excerpt -->
             <p class="text-xs leading-relaxed flex-1" style="color: var(--text-secondary)">{{ post.excerpt }}</p>
 
             <!-- Footer -->
             <div class="flex items-center justify-between pt-2" style="border-top: 1px solid hsl(var(--border))">
-              <span class="text-xs" style="color: var(--text-secondary)">{{ post.readTime }}</span>
+              <span class="text-xs" style="color: var(--text-secondary)">{{ post.readTime || '5 min read' }}</span>
               <span class="text-xs font-medium hover:opacity-70 transition-opacity cursor-pointer">{{ $t('blog.read') }}</span>
             </div>
           </article>
+        </div>
+        <div v-else class="text-center py-20 opacity-30 text-xs uppercase tracking-widest">
+           {{ $t('blog.noPosts') || 'Fetching blog posts...' }}
         </div>
 
       </div>
@@ -53,51 +57,24 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 
+defineProps({
+  posts: {
+    type: Array as () => any[],
+    default: () => []
+  }
+})
+
 const headerRef = ref<HTMLElement | null>(null)
 const cardsRef = ref<HTMLElement | null>(null)
 
-const posts = [
-  {
-    title: 'Why Every Designer Should Keep a Sketchbook',
-    tag: 'Design',
-    date: 'Oct 2024',
-    excerpt: 'In a world of infinite digital canvases, the humble sketchbook remains the most powerful design tool I own...',
-    readTime: '5 min read',
-  },
-  {
-    title: 'On the Art of Noticing Small Things',
-    tag: 'Writing',
-    date: 'Sep 2024',
-    excerpt: 'The most profound creative breakthroughs come not from grand gestures but from learning to pay deep attention to the ordinary...',
-    readTime: '7 min read',
-  },
-  {
-    title: 'Building a Design System from Zero',
-    tag: 'Tutorial',
-    date: 'Aug 2024',
-    excerpt: 'A practical walkthrough of how I approach design systems — from token architecture to component philosophy...',
-    readTime: '12 min read',
-  },
-  {
-    title: 'Living With Animals: What They Teach Us About Design',
-    tag: 'Life',
-    date: 'Jul 2024',
-    excerpt: 'My cats have taught me more about user behavior than any UX textbook ever could...',
-    readTime: '4 min read',
-  },
-  {
-    title: 'Motion Design Principles I Return To',
-    tag: 'Motion',
-    date: 'Jun 2024',
-    excerpt: 'Six foundational principles for animation that make interfaces feel alive — not just fast...',
-    readTime: '8 min read',
-  },
-  {
-    title: 'The Typography Rules I Always Break',
-    tag: 'Design',
-    date: 'May 2024',
-    excerpt: 'Rules exist to be understood deeply before you break them intentionally. Here are the ones I break most often...',
-    readTime: '6 min read',
-  },
-]
+function formatDate(dateStr: string) {
+  if (!dateStr) return 'Oct 2024'
+  return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+}
+
+function readPost(post: any) {
+  // Use router to navigate to blog detail
+  const router = useRouter()
+  router.push(`/blogs/${post.slug}`)
+}
 </script>

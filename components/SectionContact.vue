@@ -44,13 +44,13 @@
           </div>
 
           <!-- Status -->
-          <div class="mb-10 lg:mb-0 section-content" ref="statusRef">
+          <!-- <div class="mb-10 lg:mb-0 section-content" ref="statusRef">
             <div class="flex items-center gap-3 px-4 py-3 rounded-full text-xs font-medium w-max"
                  style="background: hsl(var(--muted)); border: 1px solid hsl(var(--border))">
               <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
               {{ $t('contact.footerStatus') }}
             </div>
-          </div>
+          </div> -->
 
           <!-- Footer info -->
           <div class="flex flex-col gap-2 section-content" ref="footerRef">
