@@ -1,35 +1,22 @@
-# Stage 1: Build
-FROM node:24-alpine AS builder
-
-# Set working directory
-WORKDIR /app
-
-# Copy package files
-COPY package*.json ./
-RUN npm install
-
-# Copy source code
-COPY . .
-
-# Build aplikasi Nuxt
-RUN npm run build
-
 FROM node:24-alpine
 
 WORKDIR /app
 
-RUN useradd -m -u 1000 user
-USER user
-ENV HOME=/home/user \
-    PATH=/home/user/.local/bin:$PATH
+# Menggunakan npm ci (clean install) lebih stabil untuk production
+COPY package*.json ./
+RUN npm ci
 
-COPY --chown=user:user --from=builder /app/.output ./.output
-COPY --chown=user:user --from=builder /app/package*.json ./
+COPY . .
 
-ENV HOST=0.0.0.0
-ENV PORT=7860
+# Build Nuxt
+RUN npm run build
+
+# Environment wajib untuk Hugging Face
 ENV NODE_ENV=production
+ENV PORT=7860
+ENV HOST=0.0.0.0
 
 EXPOSE 7860
 
+# Perbedaan utama ada di sini (jalur output Nuxt 3)
 CMD ["node", ".output/server/index.mjs"]
